@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberKids: Class 3 Computational Thinking Adventure</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Fredoka & Nunito for friendly child-oriented typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Fredoka', 'sans-serif'],
+            body: ['Nunito', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              yellow: '#FFD124',
+              orange: '#FF8A00',
+              purple: '#7952FC',
+              pink: '#FF4D8D',
+              blue: '#1EA7FD',
+              green: '#20C997',
+              dark: '#1E1B4B',
+            }
+          },
+          boxShadow: {
+            'bouncy': '0 8px 0 0 rgba(0, 0, 0, 0.15)',
+            'bouncy-active': '0 2px 0 0 rgba(0, 0, 0, 0.15)',
+            'card': '0 12px 24px -4px rgba(27, 24, 69, 0.08), 0 6px 12px -4px rgba(27, 24, 69, 0.04)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    h1, h2, h3, h4, .font-fun {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    .grid-pattern {
+      background-size: 24px 24px;
+      background-image: radial-gradient(circle, #cad5e2 1.5px, transparent 1.5px);
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+    .animate-wiggle {
+      animation: wiggle 1s ease-in-out infinite;
+    }
+    @keyframes pulse-slow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 2.5s ease-in-out infinite;
+    }
+    /* Hide scrollbar for clean horizontal command racks on mobile */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+
+<body class="bg-indigo-50/70 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- Confetti Celebration Canvas Overlay -->
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b-4 border-indigo-100 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Mascot & Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('home')">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-purple to-brand-blue flex items-center justify-center text-2xl shadow-md transform hover:scale-105 transition-transform">
+          🤖
+        </div>
+        <div>
+          <span class="text-xs font-bold text-brand-purple uppercase tracking-wider bg-purple-100 px-2 py-0.5 rounded-full">CBSE Class 3 • CT</span>
+          <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight leading-none">CodeQuest <span class="text-brand-orange">Junior</span></h1>
+        </div>
+      </div>
+
+      <!-- Live Gamification Stats -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <!-- Text to Speech Assistant -->
+        <button id="ttsToggle" onclick="speakCurrentInstruction()" title="Read out instruction" class="p-2.5 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold transition flex items-center gap-1.5 active:scale-95 shadow-sm text-sm">
+          <span>🔊</span>
+          <span class="hidden md:inline text-xs font-extrabold uppercase">Read to Me</span>
+        </button>
+
+        <!-- Star Tracker -->
+        <div class="flex items-center gap-1.5 bg-yellow-100/90 border-2 border-yellow-300 px-3 py-1.5 rounded-2xl text-yellow-900 font-bold text-sm shadow-sm">
+          <span class="text-lg">⭐</span>
+          <span id="starCounter" class="font-extrabold text-base">0</span>
+        </div>
+
+        <!-- Badges Button -->
+        <button onclick="openBadgesModal()" class="flex items-center gap-1.5 bg-purple-100/80 hover:bg-purple-200 border-2 border-purple-300 px-3 py-1.5 rounded-2xl text-purple-900 font-bold text-sm transition active:scale-95">
+          <span>🏆</span>
+          <span class="hidden sm:inline">Trophies</span>
+          <span id="badgeCount" class="bg-brand-purple text-white text-xs px-1.5 py-0.5 rounded-full">0/4</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-grow max-w-6xl w-full mx-auto p-4 sm:p-6 flex flex-col">
+    
+    <!-- Active Stage Banner -->
+    <div id="instructionBanner" class="mb-5 bg-white border-2 border-indigo-100 rounded-3xl p-4 sm:p-5 shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-brand-orange text-white flex items-center justify-center text-2xl shrink-0 shadow">
+          💡
+        </div>
+        <div>
+          <div class="text-xs uppercase font-extrabold text-indigo-500 tracking-wider">Mission Guide: Byte the Robot</div>
+          <p id="guideText" class="text-base sm:text-lg font-bold text-slate-800">
+            Welcome, Cadet! Select an adventure below to explore how computer scientists think!
+          </p>
+        </div>
+      </div>
+      <div id="moduleStatusBadge" class="hidden sm:inline-flex px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-black rounded-full uppercase tracking-wide">
+        Active Quest
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 border-b border-indigo-100">
+      <button onclick="switchTab('home')" class="tab-btn px-4 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition flex items-center gap-2 bg-brand-purple text-white shadow-bouncy" data-tab="home">
+        🏠 Home Hub
+      </button>
+      <button onclick="switchTab('algorithms')" class="tab-btn px-4 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition flex items-center gap-2 bg-white text-slate-600 hover:bg-indigo-50" data-tab="algorithms">
+        🚀 1. Algorithm Trail
+      </button>
+      <button onclick="switchTab('patterns')" class="tab-btn px-4 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition flex items-center gap-2 bg-white text-slate-600 hover:bg-indigo-50" data-tab="patterns">
+        🔍 2. Pattern Detective
+      </button>
+      <button onclick="switchTab('decomposition')" class="tab-btn px-4 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition flex items-center gap-2 bg-white text-slate-600 hover:bg-indigo-50" data-tab="decomposition">
+        🧩 3. Decomposition Lab
+      </button>
+      <button onclick="switchTab('debugging')" class="tab-btn px-4 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition flex items-center gap-2 bg-white text-slate-600 hover:bg-indigo-50" data-tab="debugging">
+        🐞 4. Bug Buster
+      </button>
+      <button onclick="switchTab('certificate')" class="tab-btn px-4 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition flex items-center gap-2 bg-white text-slate-600 hover:bg-indigo-50" data-tab="certificate">
+        🎓 CBSE Certificate
+      </button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 0: HOME HUB / OVERVIEW -->
+    <!-- ============================================== -->
+    <div id="tab-home" class="tab-content flex-grow space-y-6">
+      <!-- Hero Banner -->
+      <div class="rounded-3xl bg-gradient-to-r from-brand-purple via-indigo-600 to-brand-blue p-6 sm:p-8 text-white relative overflow-hidden shadow-xl">
+        <div class="relative z-10 max-w-xl">
+          <span class="bg-white/20 text-white text-xs font-black uppercase px-3 py-1 rounded-full backdrop-blur-sm">Class 3 • Foundational Coding</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold mt-3 mb-2 leading-tight">Master the 4 Superpowers of Computers!</h2>
+          <p class="text-indigo-100 text-sm sm:text-base mb-6 font-medium leading-relaxed">
+            Computers don't have brains like humans—they need our clear, clever instructions! Play thrilling games to learn <b>Algorithms</b>, <b>Patterns</b>, <b>Breaking down big tasks</b>, and <b>Fixing bugs</b>.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="switchTab('algorithms')" class="px-6 py-3 bg-brand-yellow text-slate-900 hover:bg-yellow-300 font-extrabold rounded-2xl shadow-bouncy active:shadow-bouncy-active transition transform active:translate-y-1">
+              Start Level 1: Robot Maze 🚀
+            </button>
+            <button onclick="openLearningInfoModal()" class="px-5 py-3 bg-white/20 hover:bg-white/30 text-white font-bold rounded-2xl backdrop-blur transition">
+              📖 What is Computational Thinking?
+            </button>
+          </div>
+        </div>
+        <!-- Decorative Robot Icon -->
+        <div class="hidden lg:block absolute -right-6 -bottom-8 opacity-90 text-[180px] pointer-events-none select-none">
+          🛸
+        </div>
+      </div>
+
+      <!-- 4 Pillars Cards Grid -->
+      <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2 pt-2">
+        <span>🌟</span> Choose Your Training Ground
+      </h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Pillar 1 -->
+        <div onclick="switchTab('algorithms')" class="cursor-pointer group bg-white border-2 border-indigo-100 hover:border-brand-blue rounded-3xl p-5 shadow-card transition-all transform hover:-translate-y-1.5 flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-blue-100 text-brand-blue flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+              🧭
+            </div>
+            <div class="text-xs font-extrabold text-brand-blue uppercase tracking-wider mb-1">Pillar 1</div>
+            <h4 class="text-lg font-bold text-slate-800 mb-2">Algorithms & Sequencing</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Give step-by-step instructions so Byte the Robot can collect batteries without crashing!
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue">
+            <span>Play Maze</span>
+            <span>➡️</span>
+          </div>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div onclick="switchTab('patterns')" class="cursor-pointer group bg-white border-2 border-indigo-100 hover:border-brand-pink rounded-3xl p-5 shadow-card transition-all transform hover:-translate-y-1.5 flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-pink-100 text-brand-pink flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+              🔎
+            </div>
+            <div class="text-xs font-extrabold text-brand-pink uppercase tracking-wider mb-1">Pillar 2</div>
+            <h4 class="text-lg font-bold text-slate-800 mb-2">Pattern Recognition</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Spot repetitions, symmetries, and sequences in shapes, sounds, and CBSE math challenges!
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-pink">
+            <span>Solve Clues</span>
+            <span>➡️</span>
+          </div>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div onclick="switchTab('decomposition')" class="cursor-pointer group bg-white border-2 border-indigo-100 hover:border-brand-orange rounded-3xl p-5 shadow-card transition-all transform hover:-translate-y-1.5 flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-orange-100 text-brand-orange flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+              🥪
+            </div>
+            <div class="text-xs font-extrabold text-brand-orange uppercase tracking-wider mb-1">Pillar 3</div>
+            <h4 class="text-lg font-bold text-slate-800 mb-2">Decomposition</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Chop huge problems into tiny, delicious bites! Learn how to make mango shakes, pack school bags, and plant flowers.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-orange">
+            <span>Break it Down</span>
+            <span>➡️</span>
+          </div>
+        </div>
+
+        <!-- Pillar 4 -->
+        <div onclick="switchTab('debugging')" class="cursor-pointer group bg-white border-2 border-indigo-100 hover:border-emerald-400 rounded-3xl p-5 shadow-card transition-all transform hover:-translate-y-1.5 flex flex-col justify-between">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+              🕵️‍♂️
+            </div>
+            <div class="text-xs font-extrabold text-emerald-600 uppercase tracking-wider mb-1">Pillar 4</div>
+            <h4 class="text-lg font-bold text-slate-800 mb-2">Debugging Masters</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Oops! A glitch messed up our rocket code. Inspect the sequence, catch the rogue bug, and launch!
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-600">
+            <span>Fix Glitches</span>
+            <span>➡️</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Self-Reflection Meter for CBSE Formative Assessment -->
+      <div class="bg-gradient-to-r from-amber-50 to-indigo-50 border-2 border-amber-200 rounded-3xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="text-4xl animate-wiggle">🎯</div>
+          <div>
+            <h4 class="font-extrabold text-slate-800 text-lg">Daily Computational Mindset Check!</h4>
+            <p class="text-xs sm:text-sm text-slate-600">Remember: When your code doesn't work, real programmers don't give up—they smile, inspect, and debug!</p>
+          </div>
+        </div>
+        <button onclick="triggerCheer()" class="px-5 py-2.5 bg-amber-400 hover:bg-amber-500 font-extrabold text-slate-900 rounded-2xl shadow-sm text-sm whitespace-nowrap transition active:scale-95">
+          Give Me High-Five! ✋
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 1: ALGORITHM TRAIL (ROBOT MAZE) -->
+    <!-- ============================================== -->
+    <div id="tab-algorithms" class="tab-content hidden flex-grow space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Maze Simulation Grid -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-5 border-2 border-indigo-100 shadow-card flex flex-col items-center">
+          <div class="w-full flex items-center justify-between mb-4">
+            <div>
+              <span class="text-xs font-bold text-brand-blue uppercase bg-blue-50 px-2 py-1 rounded-md">Mission 1: The Battery Route</span>
+              <h3 class="text-lg font-bold text-slate-800">Guide Byte to the Power Battery 🔋</h3>
+            </div>
+            <!-- Level Selector -->
+            <div class="flex gap-1.5 bg-slate-100 p-1 rounded-2xl">
+              <button onclick="loadMazeLevel(1)" id="mazeLvl1" class="px-3 py-1 rounded-xl text-xs font-bold bg-brand-blue text-white shadow-sm">Level 1</button>
+              <button onclick="loadMazeLevel(2)" id="mazeLvl2" class="px-3 py-1 rounded-xl text-xs font-bold text-slate-600 hover:bg-white">Level 2</button>
+              <button onclick="loadMazeLevel(3)" id="mazeLvl3" class="px-3 py-1 rounded-xl text-xs font-bold text-slate-600 hover:bg-white">Level 3</button>
+            </div>
+          </div>
+
+          <!-- 5x5 Grid Canvas Area -->
+          <div class="relative p-3 bg-indigo-900/5 rounded-3xl border-4 border-indigo-200">
+            <div id="mazeGrid" class="grid grid-cols-5 gap-2 w-[280px] h-[280px] sm:w-[340px] sm:h-[340px]">
+              <!-- Grid cells injected via JS -->
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center gap-4 text-xs font-bold text-slate-600 mt-4">
+            <span class="flex items-center gap-1">🤖 Byte (Start)</span>
+            <span class="flex items-center gap-1">🔋 Target</span>
+            <span class="flex items-center gap-1">🪨 Obstacle</span>
+            <span class="flex items-center gap-1">💎 Bonus Gem</span>
+          </div>
+        </div>
+
+        <!-- Right Column: Command Sequence Builder -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-5 border-2 border-indigo-100 shadow-card flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <span>📜</span> Your Algorithm (Code Steps)
+              </h3>
+              <button onclick="clearCommandList()" class="text-xs font-bold text-red-500 hover:text-red-700 underline">
+                Clear All
+              </button>
+            </div>
+
+            <!-- Command Rack (Empty state or pills) -->
+            <div id="commandTray" class="min-h-[140px] max-h-[220px] overflow-y-auto bg-slate-50 border-2 border-dashed border-indigo-200 rounded-2xl p-3 flex flex-wrap gap-2 content-start mb-4">
+              <div id="emptyTrayMsg" class="w-full h-full flex flex-col items-center justify-center text-center text-slate-400 py-6 text-xs font-medium">
+                <span>Tap the command buttons below to build your robot's path step by step!</span>
+              </div>
+            </div>
+
+            <!-- Command Blocks Selection -->
+            <div class="mb-4">
+              <div class="text-xs font-extrabold uppercase text-slate-500 tracking-wider mb-2">Add Instruction:</div>
+              <div class="grid grid-cols-3 gap-2">
+                <button onclick="addCommand('FORWARD')" class="p-2.5 rounded-2xl bg-blue-50 border-2 border-blue-200 hover:bg-blue-100 text-blue-800 font-extrabold text-xs flex flex-col items-center gap-1 shadow-sm active:scale-95 transition">
+                  <span class="text-lg">⬆️</span>
+                  <span>Forward</span>
+                </button>
+                <button onclick="addCommand('LEFT')" class="p-2.5 rounded-2xl bg-purple-50 border-2 border-purple-200 hover:bg-purple-100 text-purple-800 font-extrabold text-xs flex flex-col items-center gap-1 shadow-sm active:scale-95 transition">
+                  <span class="text-lg">↩️</span>
+                  <span>Turn Left</span>
+                </button>
+                <button onclick="addCommand('RIGHT')" class="p-2.5 rounded-2xl bg-purple-50 border-2 border-purple-200 hover:bg-purple-100 text-purple-800 font-extrabold text-xs flex flex-col items-center gap-1 shadow-sm active:scale-95 transition">
+                  <span class="text-lg">↪️</span>
+                  <span>Turn Right</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Execution Controls -->
+          <div class="space-y-2 pt-3 border-t border-slate-100">
+            <button id="runAlgorithmBtn" onclick="runAlgorithm()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-black rounded-2xl text-base shadow-bouncy active:shadow-bouncy-active transition transform active:translate-y-1 flex items-center justify-center gap-2">
+              <span>▶️ Run Algorithm!</span>
+            </button>
+            <button onclick="resetMaze()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+              🔄 Reset Robot Position
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: PATTERN DETECTIVE -->
+    <!-- ============================================== -->
+    <div id="tab-patterns" class="tab-content hidden flex-grow space-y-6">
+      <div class="max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 border-2 border-indigo-100 shadow-card">
+        
+        <div class="flex items-center justify-between border-b pb-4 mb-6">
+          <div>
+            <span class="text-xs font-extrabold text-brand-pink uppercase tracking-wider bg-pink-50 px-2 py-0.5 rounded-md">Pattern Recognition</span>
+            <h3 class="text-xl font-bold text-slate-800 mt-1">What Comes Next in the Secret Sequence?</h3>
+          </div>
+          <div class="text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-xl">
+            Clue <span id="patternIndexDisplay">1</span> of 4
+          </div>
+        </div>
+
+        <!-- Pattern Visualizer Box -->
+        <div class="bg-indigo-50/70 border-4 border-indigo-200 rounded-3xl p-6 sm:p-8 text-center mb-8 flex flex-col items-center">
+          <p class="text-xs font-extrabold uppercase tracking-wider text-indigo-400 mb-4">Look carefully at the rule:</p>
+          
+          <div id="patternDisplayArea" class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-3xl sm:text-5xl font-fun">
+            <!-- Injected via JS -->
+          </div>
+          
+          <p id="patternHintText" class="text-xs sm:text-sm text-slate-600 mt-5 font-semibold bg-white px-4 py-2 rounded-2xl shadow-sm border border-indigo-100">
+            Hint: Spot what repeats and in what exact order!
+          </p>
+        </div>
+
+        <!-- Option Buttons for Students -->
+        <div class="mb-4">
+          <div class="text-center text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Choose the Missing Piece:</div>
+          <div id="patternOptions" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <!-- Option buttons injected via JS -->
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+          <button onclick="nextPatternQuestion(-1)" id="prevPatternBtn" class="text-xs font-bold text-slate-500 hover:text-slate-800 disabled:opacity-40" disabled>
+            ⬅️ Previous
+          </button>
+          <button onclick="nextPatternQuestion(1)" id="nextPatternBtn" class="px-4 py-2 bg-brand-pink hover:bg-pink-600 text-white font-bold rounded-2xl text-xs transition active:scale-95 shadow-sm">
+            Next Pattern ➡️
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 3: DECOMPOSITION LAB -->
+    <!-- ============================================== -->
+    <div id="tab-decomposition" class="tab-content hidden flex-grow space-y-6">
+      <div class="max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 border-2 border-indigo-100 shadow-card">
+        
+        <div class="flex items-center justify-between border-b pb-4 mb-5">
+          <div>
+            <span class="text-xs font-extrabold text-brand-orange uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded-md">Decomposition Principle</span>
+            <h3 class="text-xl font-bold text-slate-800 mt-1">Break a Big Job into 4 Small Steps!</h3>
+          </div>
+          <!-- Recipe Picker -->
+          <select id="decompScenarioSelect" onchange="loadDecompScenario(this.value)" class="text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 rounded-xl px-2 py-1.5 focus:outline-none">
+            <option value="sandwich">Task 1: Making a Yummy Jam Toast 🍞</option>
+            <option value="schoolbag">Task 2: Packing School Bag for Class 3 🎒</option>
+            <option value="plant">Task 3: Planting a Sunflower Seed 🌻</option>
+          </select>
+        </div>
+
+        <p class="text-xs sm:text-sm text-slate-600 mb-5 leading-relaxed">
+          <b>Computational Thinkers</b> don't get scared by giant tasks! They decompose them into easy, bite-sized steps in the correct chronological order. Tap the cards below from <b>Step 1 to Step 4</b>!
+        </p>
+
+        <!-- Target Step Slots (1 to 4) -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
+          <div id="slot-1" class="step-slot bg-indigo-50/70 border-2 border-dashed border-indigo-300 rounded-2xl p-3 min-h-[90px] flex flex-col items-center justify-center text-center text-xs">
+            <span class="font-extrabold text-indigo-400 mb-1">Step 1</span>
+            <span class="slot-text text-slate-400 font-medium">Drop 1st here</span>
+          </div>
+          <div id="slot-2" class="step-slot bg-indigo-50/70 border-2 border-dashed border-indigo-300 rounded-2xl p-3 min-h-[90px] flex flex-col items-center justify-center text-center text-xs">
+            <span class="font-extrabold text-indigo-400 mb-1">Step 2</span>
+            <span class="slot-text text-slate-400 font-medium">Drop 2nd here</span>
+          </div>
+          <div id="slot-3" class="step-slot bg-indigo-50/70 border-2 border-dashed border-indigo-300 rounded-2xl p-3 min-h-[90px] flex flex-col items-center justify-center text-center text-xs">
+            <span class="font-extrabold text-indigo-400 mb-1">Step 3</span>
+            <span class="slot-text text-slate-400 font-medium">Drop 3rd here</span>
+          </div>
+          <div id="slot-4" class="step-slot bg-indigo-50/70 border-2 border-dashed border-indigo-300 rounded-2xl p-3 min-h-[90px] flex flex-col items-center justify-center text-center text-xs">
+            <span class="font-extrabold text-indigo-400 mb-1">Step 4</span>
+            <span class="slot-text text-slate-400 font-medium">Drop 4th here</span>
+          </div>
+        </div>
+
+        <!-- Available Jumbled Steps Pool -->
+        <div class="mb-6">
+          <div class="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Available Action Cards (Tap to place):</div>
+          <div id="decompCardsPool" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Jumbled Cards Injected by JS -->
+          </div>
+        </div>
+
+        <!-- Check Solution Buttons -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <button onclick="resetDecomp()" class="text-xs font-bold text-slate-500 hover:text-slate-800">
+            🔄 Clear Slots
+          </button>
+          <button onclick="verifyDecomposition()" class="px-6 py-3 bg-brand-orange hover:bg-orange-600 text-white font-extrabold rounded-2xl shadow-bouncy active:shadow-bouncy-active transition transform active:translate-y-1 text-sm">
+            Check My Steps! ✨
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 4: BUG BUSTER (DEBUGGING) -->
+    <!-- ============================================== -->
+    <div id="tab-debugging" class="tab-content hidden flex-grow space-y-6">
+      <div class="max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 border-2 border-indigo-100 shadow-card">
+        
+        <div class="flex items-center justify-between border-b pb-4 mb-4">
+          <div>
+            <span class="text-xs font-extrabold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-md">Bug Hunter Challenge</span>
+            <h3 class="text-xl font-bold text-slate-800 mt-1">Spot & Fix the Glitched Block!</h3>
+          </div>
+          <span class="text-3xl">🐞</span>
+        </div>
+
+        <!-- The Story Scenario -->
+        <div class="bg-emerald-50/60 border-2 border-emerald-200 rounded-2xl p-4 mb-6 text-slate-700 text-xs sm:text-sm">
+          <p class="font-bold text-emerald-900 mb-1">Target Goal:</p>
+          <p id="debugGoalText">Byte wants to jump over the puddle and land safely on the green grass. But someone wrote a faulty instruction! Find the wrong block, click it to fix it, and test your code.</p>
+        </div>
+
+        <!-- The Interactive Code Sequence with a Bug -->
+        <div class="mb-8">
+          <div class="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Inspect Code Chain (Tap on the buggy step to swap it):</div>
+          <div id="debugChainContainer" class="flex flex-wrap items-center justify-center gap-2 p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl min-h-[100px]">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- Fix Controls -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+          <div class="text-xs text-slate-500 font-semibold">
+            Hint: Read the arrows like a path from left to right!
+          </div>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button onclick="resetDebugPuzzle()" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition">
+              Reset
+            </button>
+            <button onclick="testDebugCode()" class="flex-1 sm:flex-none px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl shadow-bouncy active:shadow-bouncy-active transition transform active:translate-y-1 text-sm">
+              Test & Launch Rocket 🚀
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 5: CBSE CERTIFICATE GENERATOR -->
+    <!-- ============================================== -->
+    <div id="tab-certificate" class="tab-content hidden flex-grow space-y-6">
+      <div class="max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-8 border-2 border-indigo-100 shadow-card text-center">
+        
+        <div class="w-16 h-16 mx-auto rounded-3xl bg-yellow-100 text-brand-orange flex items-center justify-center text-4xl mb-3">
+          🎓
+        </div>
+        <h3 class="text-2xl font-black text-slate-800">Class 3 Junior Computational Thinker Certificate</h3>
+        <p class="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto mt-1 mb-6">
+          Congratulations on thinking like a programmer! Enter your student details to generate and print your official personalized certificate aligned with CBSE Foundational Stage standards.
+        </p>
+
+        <!-- Certificate Input Form -->
+        <div class="max-w-md mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-left">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Student's Full Name:</label>
+            <input type="text" id="certStudentName" placeholder="e.g. Aarav Sharma" value="Aarav Sharma" class="w-full px-3 py-2 text-sm border-2 border-indigo-200 rounded-xl focus:border-brand-purple focus:outline-none font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">School Name:</label>
+            <input type="text" id="certSchoolName" placeholder="e.g. Delhi Public School" value="Delhi Public School" class="w-full px-3 py-2 text-sm border-2 border-indigo-200 rounded-xl focus:border-brand-purple focus:outline-none font-bold" />
+          </div>
+        </div>
+
+        <button onclick="generateCertificateCanvas()" class="px-6 py-3 bg-brand-purple hover:bg-purple-700 text-white font-extrabold rounded-2xl shadow-bouncy active:shadow-bouncy-active transition transform active:translate-y-1 text-sm mb-6">
+          Generate My Certificate 📜
+        </button>
+
+        <!-- Printable Certificate Canvas Preview -->
+        <div class="overflow-x-auto p-2 bg-slate-100 rounded-3xl border border-slate-200 flex justify-center">
+          <canvas id="certCanvas" width="800" height="520" class="max-w-full h-auto rounded-2xl shadow-lg border-4 border-white bg-white"></canvas>
+        </div>
+
+        <div class="mt-4 flex justify-center gap-3">
+          <button onclick="downloadCertificate()" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl text-xs transition shadow flex items-center gap-1.5">
+            <span>💾</span> Download as Image
+          </button>
+          <button onclick="window.print()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold rounded-2xl text-xs transition shadow flex items-center gap-1.5">
+            <span>🖨️</span> Print Certificate
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-8 border-t border-indigo-100 bg-white py-4 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>
+        Designed for <b>CBSE Class 3 Computational Thinking & Coding Curriculum</b> (NEP 2020)
+      </div>
+      <div class="flex items-center gap-3 font-semibold text-slate-600">
+        <span>No Login Needed</span>
+        <span>•</span>
+        <span>Runs 100% in Browser</span>
+        <span>•</span>
+        <span>Free for Schools</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================== -->
+  <!-- MODALS & POPUPS (No browser alert()) -->
+  <!-- ============================================== -->
+
+  <!-- Feedback / Alert Modal -->
+  <div id="feedbackModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center border-4 border-indigo-200 shadow-2xl transform transition-all">
+      <div id="modalEmoji" class="text-5xl mb-2 animate-bounce">🎉</div>
+      <h3 id="modalTitle" class="text-xl font-extrabold text-slate-800 mb-1">Super Job!</h3>
+      <p id="modalMsg" class="text-xs sm:text-sm text-slate-600 mb-5 font-medium leading-relaxed">You solved this algorithm like a true computer scientist.</p>
+      <button onclick="closeModal('feedbackModal')" class="w-full py-3 bg-brand-purple hover:bg-purple-700 text-white font-black rounded-2xl text-sm shadow-bouncy active:shadow-bouncy-active transition">
+        Awesome, Continue! 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- Trophies & Badges Modal -->
+  <div id="badgesModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 border-4 border-purple-200 shadow-2xl">
+      <div class="flex items-center justify-between border-b pb-3 mb-4">
+        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <span>🏆</span> Your Badges Showcase
+        </h3>
+        <button onclick="closeModal('badgesModal')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+      </div>
+      <div id="badgesGrid" class="grid grid-cols-2 gap-3 mb-4">
+        <!-- Dynamic badge cards -->
+      </div>
+      <button onclick="closeModal('badgesModal')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">
+        Keep Exploring
+      </button>
+    </div>
+  </div>
+
+  <!-- Educational Info Modal: What is CT? -->
+  <div id="learningInfoModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 border-4 border-indigo-200 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3 mb-3">
+        <h3 class="text-lg font-bold text-brand-purple flex items-center gap-2">
+          <span>📘</span> CBSE Computational Thinking Guide
+        </h3>
+        <button onclick="closeModal('learningInfoModal')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+      </div>
+      <div class="space-y-3 text-xs sm:text-sm text-slate-700 leading-relaxed">
+        <p><b>Computational Thinking (CT)</b> is NOT about staring at a computer screen all day. It is a way of thinking to solve problems in real life!</p>
+        <div class="p-3 bg-blue-50 rounded-2xl border border-blue-200">
+          <b class="text-blue-900">1. Decomposition:</b> Breaking down big chores (like cleaning your entire bedroom) into small steps (pick up books, fold blankets, sweep floor).
+        </div>
+        <div class="p-3 bg-pink-50 rounded-2xl border border-pink-200">
+          <b class="text-pink-900">2. Pattern Recognition:</b> Spotting repeats and similarities to solve puzzles faster (like counting by 2s or traffic lights cycles).
+        </div>
+        <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200">
+          <b class="text-amber-900">3. Algorithms:</b> Creating an ordered set of instructions so a friend or machine can replicate your result (like a cake recipe).
+        </div>
+        <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200">
+          <b class="text-emerald-900">4. Debugging:</b> Finding mistakes when things don't go as planned and happily fixing them!
+        </div>
+      </div>
+      <button onclick="closeModal('learningInfoModal')" class="w-full mt-5 py-2.5 bg-brand-purple text-white font-bold rounded-xl text-xs">
+        Got it, Let's Play!
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- JAVASCRIPT LOGIC ENGINE -->
+  <!-- ============================================== -->
+  <script>
+    /* ==============================================
+       1. SOUND SYNTHESIZER (Web Audio API)
+       No external audio files needed - zero 404 risk!
+       ============================================== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(freq, type = 'sine', duration = 0.15, delay = 0) {
+      setTimeout(() => {
+        try {
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch(e){}
+      }, delay * 1000);
+    }
+
+    const soundEngine = {
+      click: () => playTone(600, 'sine', 0.06),
+      pop: () => playTone(850, 'triangle', 0.1),
+      success: () => {
+        playTone(523.25, 'triangle', 0.1, 0);      // C5
+        playTone(659.25, 'triangle', 0.1, 0.08);   // E5
+        playTone(783.99, 'triangle', 0.15, 0.16);  // G5
+        playTone(1046.50, 'sine', 0.3, 0.24);      // C6
+      },
+      error: () => {
+        playTone(220, 'sawtooth', 0.15, 0);
+        playTone(180, 'sawtooth', 0.25, 0.12);
+      },
+      fanfare: () => {
+        [440, 554, 659, 880].forEach((f, i) => playTone(f, 'square', 0.2, i * 0.12));
+      }
+    };
+
+    /* ==============================================
+       2. GLOBAL STATE & GAMIFICATION SYSTEM
+       ============================================== */
+    const state = {
+      stars: 0,
+      activeTab: 'home',
+      badges: {
+        algoMaster: { title: "Maze Runner", desc: "Completed an Algorithm Mission", icon: "🚀", earned: false },
+        patternPro: { title: "Pattern Ace", desc: "Solved the secret sequence", icon: "🔍", earned: false },
+        decompHero: { title: "Master Chef", desc: "Decomposed a complex problem", icon: "🧩", earned: false },
+        bugCatcher: { title: "Bug Hunter", desc: "Squashed and fixed code bugs", icon: "🐞", earned: false }
+      }
+    };
+
+    function addStars(count) {
+      state.stars += count;
+      document.getElementById('starCounter').innerText = state.stars;
+      triggerConfetti();
+      soundEngine.fanfare();
+    }
+
+    function unlockBadge(id) {
+      if (state.badges[id] && !state.badges[id].earned) {
+        state.badges[id].earned = true;
+        updateBadgeUI();
+        showFeedbackModal("🏆 New Trophy Unlocked!", `You earned the "${state.badges[id].title}" badge! Great computational thinking!`, state.badges[id].icon);
+      }
+    }
+
+    function updateBadgeUI() {
+      const earnedCount = Object.values(state.badges).filter(b => b.earned).length;
+      document.getElementById('badgeCount').innerText = `${earnedCount}/4`;
+      
+      const grid = document.getElementById('badgesGrid');
+      grid.innerHTML = Object.values(state.badges).map(b => `
+        <div class="p-3 rounded-2xl border-2 flex flex-col items-center text-center ${b.earned ? 'bg-amber-50 border-amber-300 text-slate-800' : 'bg-slate-50 border-slate-200 opacity-50'}">
+          <span class="text-3xl mb-1">${b.icon}</span>
+          <span class="text-xs font-black">${b.title}</span>
+          <span class="text-[10px] text-slate-500 mt-0.5 leading-tight">${b.desc}</span>
+          <span class="mt-1 text-[10px] font-bold ${b.earned ? 'text-emerald-600' : 'text-slate-400'}">${b.earned ? '✓ Earned' : 'Locked'}</span>
+        </div>
+      `).join('');
+    }
+
+    function openBadgesModal() {
+      soundEngine.click();
+      updateBadgeUI();
+      document.getElementById('badgesModal').classList.remove('hidden');
+    }
+
+    function openLearningInfoModal() {
+      soundEngine.click();
+      document.getElementById('learningInfoModal').classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      soundEngine.click();
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function showFeedbackModal(title, msg, emoji = '🎉') {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalMsg').innerText = msg;
+      document.getElementById('modalEmoji').innerText = emoji;
+      document.getElementById('feedbackModal').classList.remove('hidden');
+    }
+
+    function triggerCheer() {
+      soundEngine.fanfare();
+      triggerConfetti();
+      showFeedbackModal("High Five, Champion!", "Keep exploring, questioning, and building!", "✋");
+    }
+
+    /* ==============================================
+       3. NAVIGATION & SPEECH ASSISTANT
+       ============================================== */
+    const tabGuides = {
+      home: "Welcome Cadet! Pick an adventure below to explore computational thinking!",
+      algorithms: "Drag or tap arrow commands to program Byte's path to the power battery!",
+      patterns: "Inspect what repeats in order. Pick the correct missing piece!",
+      decomposition: "Big tasks are simple when broken down! Put the steps into order 1 to 4.",
+      debugging: "Find the wrong arrow step that causes a crash and replace it!",
+      certificate: "Enter your name and school to print your CBSE Class 3 Certificate!"
+    };
+
+    function switchTab(tabId) {
+      soundEngine.click();
+      state.activeTab = tabId;
+
+      // Update Tab Buttons UI
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tabId) {
+          btn.className = "tab-btn px-4 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition flex items-center gap-2 bg-brand-purple text-white shadow-bouncy";
+        } else {
+          btn.className = "tab-btn px-4 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition flex items-center gap-2 bg-white text-slate-600 hover:bg-indigo-50";
+        }
+      });
+
+      // Show Selected Section
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      const activeEl = document.getElementById(`tab-${tabId}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+
+      // Update Instruction Banner
+      const guideText = tabGuides[tabId] || "";
+      document.getElementById('guideText').innerText = guideText;
+
+      if (tabId === 'certificate') {
+        generateCertificateCanvas();
+      }
+    }
+
+    function speakCurrentInstruction() {
+      const text = document.getElementById('guideText').innerText;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9; // Friendly gentle pace for Class 3
+        utterance.pitch = 1.1;
+        window.speechSynthesis.speak(utterance);
+        soundEngine.pop();
+      }
+    }
+
+    /* ==============================================
+       4. MODULE 1: ALGORITHM TRAIL (ROBOT MAZE)
+       ============================================== */
+    const mazeConfig = {
+      1: {
+        size: 5,
+        start: { x: 0, y: 4, dir: 'UP' }, // bottom left
+        target: { x: 4, y: 0 },          // top right
+        obstacles: [{ x: 2, y: 4 }, { x: 2, y: 3 }, { x: 2, y: 2 }],
+        gems: [{ x: 1, y: 1 }]
+      },
+      2: {
+        size: 5,
+        start: { x: 0, y: 4, dir: 'RIGHT' },
+        target: { x: 4, y: 4 },
+        obstacles: [{ x: 1, y: 4 }, { x: 2, y: 3 }, { x: 3, y: 4 }],
+        gems: [{ x: 2, y: 2 }]
+      },
+      3: {
+        size: 5,
+        start: { x: 0, y: 2, dir: 'RIGHT' },
+        target: { x: 4, y: 2 },
+        obstacles: [{ x: 1, y: 2 }, { x: 3, y: 2 }, { x: 2, y: 1 }, { x: 2, y: 3 }],
+        gems: [{ x: 2, y: 0 }]
+      }
+    };
+
+    let currentMazeLevel = 1;
+    let robotState = { x: 0, y: 4, dir: 'UP' };
+    let commandSequence = [];
+    let isExecuting = false;
+
+    function loadMazeLevel(lvl) {
+      soundEngine.click();
+      currentMazeLevel = lvl;
+      [1, 2, 3].forEach(l => {
+        const btn = document.getElementById(`mazeLvl${l}`);
+        if (l === lvl) {
+          btn.className = "px-3 py-1 rounded-xl text-xs font-bold bg-brand-blue text-white shadow-sm";
+        } else {
+          btn.className = "px-3 py-1 rounded-xl text-xs font-bold text-slate-600 hover:bg-white";
+        }
+      });
+      clearCommandList();
+      resetMaze();
+    }
+
+    function resetMaze() {
+      const cfg = mazeConfig[currentMazeLevel];
+      robotState = { ...cfg.start };
+      renderMazeGrid();
+    }
+
+    function renderMazeGrid() {
+      const cfg = mazeConfig[currentMazeLevel];
+      const gridEl = document.getElementById('mazeGrid');
+      gridEl.innerHTML = '';
+
+      for (let y = 0; y < cfg.size; y++) {
+        for (let x = 0; x < cfg.size; x++) {
+          const cell = document.createElement('div');
+          cell.className = "w-full h-full rounded-xl flex items-center justify-center text-xl transition-all duration-300 relative border border-indigo-100 bg-white shadow-sm";
+          
+          // Check Obstacle
+          const isObstacle = cfg.obstacles.some(o => o.x === x && o.y === y);
+          const isTarget = cfg.target.x === x && cfg.target.y === y;
+          const isGem = cfg.gems.some(g => g.x === x && g.y === y);
+          const isRobot = robotState.x === x && robotState.y === y;
+
+          if (isObstacle) {
+            cell.innerText = "🪨";
+            cell.classList.add('bg-slate-200');
+          } else if (isTarget) {
+            cell.innerText = "🔋";
+            cell.classList.add('bg-amber-100', 'animate-pulse');
+          } else if (isGem) {
+            cell.innerText = "💎";
+            cell.classList.add('bg-cyan-50');
+          }
+
+          if (isRobot) {
+            cell.innerText = "🤖";
+            cell.classList.add('bg-blue-200', 'ring-4', 'ring-brand-blue', 'z-10');
+            // Show directional eye
+            const dirArrow = robotState.dir === 'UP' ? '⬆️' : robotState.dir === 'DOWN' ? '⬇️' : robotState.dir === 'LEFT' ? '⬅️' : '➡️';
+            const badge = document.createElement('span');
+            badge.className = "absolute -top-1.5 -right-1.5 text-[10px] bg-white rounded-full px-1 shadow border";
+            badge.innerText = dirArrow;
+            cell.appendChild(badge);
+          }
+
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function addCommand(cmd) {
+      if (isExecuting) return;
+      if (commandSequence.length >= 14) {
+        soundEngine.error();
+        return;
+      }
+      soundEngine.pop();
+      commandSequence.push(cmd);
+      renderCommandTray();
+    }
+
+    function removeCommand(idx) {
+      if (isExecuting) return;
+      soundEngine.click();
+      commandSequence.splice(idx, 1);
+      renderCommandTray();
+    }
+
+    function clearCommandList() {
+      if (isExecuting) return;
+      commandSequence = [];
+      renderCommandTray();
+    }
+
+    function renderCommandTray() {
+      const tray = document.getElementById('commandTray');
+      tray.innerHTML = '';
+      if (commandSequence.length === 0) {
+        tray.innerHTML = `<div id="emptyTrayMsg" class="w-full h-full flex flex-col items-center justify-center text-center text-slate-400 py-6 text-xs font-medium">
+          <span>Tap the buttons below to sequence Byte's moves!</span>
+        </div>`;
+        return;
+      }
+
+      commandSequence.forEach((cmd, idx) => {
+        const item = document.createElement('div');
+        item.id = `cmd-step-${idx}`;
+        item.className = "px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition transform hover:scale-105";
+        
+        if (cmd === 'FORWARD') {
+          item.classList.add('bg-blue-100', 'text-blue-800', 'border', 'border-blue-300');
+          item.innerHTML = `<span>⬆️ Step</span> <span onclick="removeCommand(${idx})" class="text-[10px] text-blue-400 hover:text-blue-700">✕</span>`;
+        } else if (cmd === 'LEFT') {
+          item.classList.add('bg-purple-100', 'text-purple-800', 'border', 'border-purple-300');
+          item.innerHTML = `<span>↩️ Left</span> <span onclick="removeCommand(${idx})" class="text-[10px] text-purple-400 hover:text-purple-700">✕</span>`;
+        } else if (cmd === 'RIGHT') {
+          item.classList.add('bg-purple-100', 'text-purple-800', 'border', 'border-purple-300');
+          item.innerHTML = `<span>↪️ Right</span> <span onclick="removeCommand(${idx})" class="text-[10px] text-purple-400 hover:text-purple-700">✕</span>`;
+        }
+        tray.appendChild(item);
+      });
+    }
+
+    async function runAlgorithm() {
+      if (isExecuting || commandSequence.length === 0) {
+        soundEngine.error();
+        return;
+      }
+
+      isExecuting = true;
+      document.getElementById('runAlgorithmBtn').disabled = true;
+      resetMaze();
+
+      const cfg = mazeConfig[currentMazeLevel];
+      const directions = ['UP', 'RIGHT', 'DOWN', 'LEFT'];
+
+      for (let i = 0; i < commandSequence.length; i++) {
+        const cmd = commandSequence[i];
+        
+        // Highlight active executing block
+        document.querySelectorAll('#commandTray > div').forEach(d => d.classList.remove('ring-2', 'ring-emerald-500'));
+        const activeBlock = document.getElementById(`cmd-step-${i}`);
+        if (activeBlock) activeBlock.classList.add('ring-2', 'ring-emerald-500');
+
+        soundEngine.pop();
+
+        if (cmd === 'LEFT') {
+          let curIdx = directions.indexOf(robotState.dir);
+          robotState.dir = directions[(curIdx + 3) % 4];
+        } else if (cmd === 'RIGHT') {
+          let curIdx = directions.indexOf(robotState.dir);
+          robotState.dir = directions[(curIdx + 1) % 4];
+        } else if (cmd === 'FORWARD') {
+          let nextX = robotState.x;
+          let nextY = robotState.y;
+
+          if (robotState.dir === 'UP') nextY--;
+          if (robotState.dir === 'DOWN') nextY++;
+          if (robotState.dir === 'LEFT') nextX--;
+          if (robotState.dir === 'RIGHT') nextX++;
+
+          // Wall collision check
+          if (nextX < 0 || nextX >= cfg.size || nextY < 0 || nextY >= cfg.size) {
+            soundEngine.error();
+            showFeedbackModal("Ouch! Wall Bump!", "Byte hit the edge of the world. Check your step count!", "🧱");
+            isExecuting = false;
+            document.getElementById('runAlgorithmBtn').disabled = false;
+            return;
+          }
+
+          // Obstacle check
+          const hitObstacle = cfg.obstacles.some(o => o.x === nextX && o.y === nextY);
+          if (hitObstacle) {
+            soundEngine.error();
+            showFeedbackModal("Obstacle Ahead!", "Byte crashed into a rock boulder! Adjust your sequence to navigate around it.", "🪨");
+            isExecuting = false;
+            document.getElementById('runAlgorithmBtn').disabled = false;
+            return;
+          }
+
+          robotState.x = nextX;
+          robotState.y = nextY;
+        }
+
+        renderMazeGrid();
+        await new Promise(r => setTimeout(r, 450)); // Step delay for clear child observation
+      }
+
+      // Check final destination
+      if (robotState.x === cfg.target.x && robotState.y === cfg.target.y) {
+        addStars(5);
+        unlockBadge('algoMaster');
+        showFeedbackModal("Target Reached! 🔋", "Byte is fully charged thanks to your precise algorithm steps!", "🌟");
+      } else {
+        soundEngine.error();
+        showFeedbackModal("Almost there!", "Byte finished running all commands but didn't reach the Battery. Add a few more steps!", "🤖");
+      }
+
+      isExecuting = false;
+      document.getElementById('runAlgorithmBtn').disabled = false;
+    }
+
+    /* ==============================================
+       5. MODULE 2: PATTERN DETECTIVE
+       ============================================== */
+    const patternChallenges = [
+      {
+        sequence: ["🔺", "🟦", "🔺", "🟦", "❓"],
+        options: ["🔺", "🟦", "🟢", "⭐"],
+        correct: "🔺",
+        hint: "Notice the alternating colors: Triangle, Square, Triangle, Square..."
+      },
+      {
+        sequence: ["🍎", "🍌", "🍌", "🍎", "🍌", "❓"],
+        options: ["🍌", "🍎", "🍇", "🍊"],
+        correct: "🍌",
+        hint: "The rule is 1 Apple followed by 2 Bananas!"
+      },
+      {
+        sequence: ["2", "4", "6", "8", "❓"],
+        options: ["9", "10", "12", "7"],
+        correct: "10",
+        hint: "We are skip counting by 2s! 2, 4, 6, 8..."
+      },
+      {
+        sequence: ["🌞", "⭐", "🌙", "🌞", "⭐", "❓"],
+        options: ["🌙", "🌞", "⭐", "🪐"],
+        correct: "🌙",
+        hint: "Sun, Star, Moon repeats every 3 sky objects!"
+      }
+    ];
+
+    let currentPatternIdx = 0;
+
+    function renderPatternQuestion() {
+      const q = patternChallenges[currentPatternIdx];
+      document.getElementById('patternIndexDisplay').innerText = currentPatternIdx + 1;
+      document.getElementById('patternHintText').innerText = `Hint: ${q.hint}`;
+
+      // Sequence Display
+      const displayArea = document.getElementById('patternDisplayArea');
+      displayArea.innerHTML = q.sequence.map(item => `
+        <span class="p-3 bg-white rounded-2xl shadow-sm border border-indigo-100 min-w-[55px] inline-block">${item}</span>
+      `).join('');
+
+      // Options
+      const optArea = document.getElementById('patternOptions');
+      optArea.innerHTML = q.options.map(opt => `
+        <button onclick="handlePatternAnswer('${opt}')" class="p-4 bg-white hover:bg-pink-50 border-2 border-pink-200 hover:border-brand-pink text-slate-800 font-black rounded-2xl text-2xl sm:text-3xl shadow-sm transition active:scale-95 flex items-center justify-center">
+          ${opt}
+        </button>
+      `).join('');
+
+      document.getElementById('prevPatternBtn').disabled = currentPatternIdx === 0;
+      document.getElementById('nextPatternBtn').disabled = currentPatternIdx === patternChallenges.length - 1;
+    }
+
+    function handlePatternAnswer(choice) {
+      const q = patternChallenges[currentPatternIdx];
+      if (choice === q.correct) {
+        soundEngine.success();
+        addStars(3);
+        unlockBadge('patternPro');
+        showFeedbackModal("Pattern Mastered!", `Correct! ${choice} fits the rule perfectly!`, "🔎");
+      } else {
+        soundEngine.error();
+        showFeedbackModal("Try Again!", "That didn't match the repeat cycle. Look at the hint and try once more!", "🤔");
+      }
+    }
+
+    function nextPatternQuestion(delta) {
+      soundEngine.click();
+      currentPatternIdx = Math.max(0, Math.min(patternChallenges.length - 1, currentPatternIdx + delta));
+      renderPatternQuestion();
+    }
+
+    /* ==============================================
+       6. MODULE 3: DECOMPOSITION LAB
+       ============================================== */
+    const decompScenarios = {
+      sandwich: {
+        title: "Jam Toast",
+        steps: [
+          { id: 's1', text: "1. Take out two fresh slices of bread 🍞", correctSlot: 1 },
+          { id: 's2', text: "2. Put bread in toaster and toast lightly 🥪", correctSlot: 2 },
+          { id: 's3', text: "3. Spread sweet strawberry jam with a butter knife 🍓", correctSlot: 3 },
+          { id: 's4', text: "4. Cut into triangles and serve on plate! 🍽️", correctSlot: 4 }
+        ]
+      },
+      schoolbag: {
+        title: "Packing School Bag",
+        steps: [
+          { id: 'b1', text: "1. Check tomorrow's class timetable 📅", correctSlot: 1 },
+          { id: 'b2', text: "2. Place notebook and math textbook inside 📚", correctSlot: 2 },
+          { id: 'b3', text: "3. Pack sharpened pencils and eraser in pencil box ✏️", correctSlot: 3 },
+          { id: 'b4', text: "4. Zip up the bag and slide water bottle in pocket 💧", correctSlot: 4 }
+        ]
+      },
+      plant: {
+        title: "Planting a Seed",
+        steps: [
+          { id: 'p1', text: "1. Fill a flower pot with healthy brown soil 🪴", correctSlot: 1 },
+          { id: 'p2', text: "2. Poke a small hole and drop the seed inside 🌱", correctSlot: 2 },
+          { id: 'p3', text: "3. Cover gently and sprinkle warm water 🚿", correctSlot: 3 },
+          { id: 'p4', text: "4. Place in bright sunny window and watch grow 🌻", correctSlot: 4 }
+        ]
+      }
+    };
+
+    let activeScenarioKey = 'sandwich';
+    let currentPlacedSteps = [null, null, null, null]; // slots 1 to 4
+
+    function loadDecompScenario(key) {
+      soundEngine.click();
+      activeScenarioKey = key;
+      resetDecomp();
+    }
+
+    function resetDecomp() {
+      currentPlacedSteps = [null, null, null, null];
+      renderDecompSlots();
+      renderDecompCardsPool();
+    }
+
+    function renderDecompSlots() {
+      for (let i = 1; i <= 4; i++) {
+        const slotEl = document.getElementById(`slot-${i}`);
+        const placed = currentPlacedSteps[i - 1];
+        if (placed) {
+          slotEl.className = "step-slot bg-white border-2 border-brand-orange text-slate-800 rounded-2xl p-3 min-h-[90px] flex flex-col items-center justify-center text-center text-xs shadow-sm cursor-pointer";
+          slotEl.innerHTML = `<span class="font-extrabold text-brand-orange text-[10px] uppercase">Step ${i}</span><span class="font-bold mt-1">${placed.text}</span>`;
+          slotEl.onclick = () => unplaceStep(i - 1);
+        } else {
+          slotEl.className = "step-slot bg-indigo-50/70 border-2 border-dashed border-indigo-300 rounded-2xl p-3 min-h-[90px] flex flex-col items-center justify-center text-center text-xs";
+          slotEl.innerHTML = `<span class="font-extrabold text-indigo-400 mb-1">Step ${i}</span><span class="slot-text text-slate-400 font-medium">Drop here</span>`;
+          slotEl.onclick = null;
+        }
+      }
+    }
+
+    function renderDecompCardsPool() {
+      const scenario = decompScenarios[activeScenarioKey];
+      const poolEl = document.getElementById('decompCardsPool');
+      poolEl.innerHTML = '';
+
+      // Jumble steps for child to sort
+      const placedIds = currentPlacedSteps.filter(Boolean).map(s => s.id);
+      const remaining = scenario.steps.filter(s => !placedIds.includes(s.id));
+
+      if (remaining.length === 0) {
+        poolEl.innerHTML = `<div class="col-span-full py-4 text-center text-xs font-bold text-slate-400 bg-slate-50 rounded-2xl border border-dashed">All steps placed in order! Tap "Check My Steps" below.</div>`;
+        return;
+      }
+
+      // Display without step number prefix to make them think
+      remaining.forEach(item => {
+        const card = document.createElement('button');
+        const strippedText = item.text.replace(/^\d+\.\s*/, '');
+        card.className = "p-3 bg-white hover:bg-orange-50 border-2 border-slate-200 hover:border-brand-orange rounded-2xl text-xs font-bold text-slate-700 text-left shadow-sm transition active:scale-95";
+        card.innerHTML = `<span>➕ ${strippedText}</span>`;
+        card.onclick = () => placeStepInNextSlot(item);
+        poolEl.appendChild(card);
+      });
+    }
+
+    function placeStepInNextSlot(stepObj) {
+      const firstFreeIdx = currentPlacedSteps.findIndex(s => s === null);
+      if (firstFreeIdx !== -1) {
+        soundEngine.pop();
+        currentPlacedSteps[firstFreeIdx] = stepObj;
+        renderDecompSlots();
+        renderDecompCardsPool();
+      }
+    }
+
+    function unplaceStep(slotIdx) {
+      soundEngine.click();
+      currentPlacedSteps[slotIdx] = null;
+      renderDecompSlots();
+      renderDecompCardsPool();
+    }
+
+    function verifyDecomposition() {
+      if (currentPlacedSteps.includes(null)) {
+        soundEngine.error();
+        showFeedbackModal("Not Done Yet!", "Please fill all 4 step slots before checking!", "⏳");
+        return;
+      }
+
+      let allCorrect = true;
+      currentPlacedSteps.forEach((step, idx) => {
+        if (step.correctSlot !== (idx + 1)) {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        addStars(5);
+        unlockBadge('decompHero');
+        showFeedbackModal("Perfect Decomposition! 🧩", "You broke the big problem into 4 crisp, logical steps in perfect order!", "🌟");
+      } else {
+        soundEngine.error();
+        showFeedbackModal("Check the Chronology!", "Some steps are out of order. Would you spread jam before toasting the bread? Review and try again!", "🤔");
+      }
+    }
+
+    /* ==============================================
+       7. MODULE 4: BUG BUSTER (DEBUGGING)
+       ============================================== */
+    const debugPuzzles = [
+      {
+        goal: "Byte wants to move right 3 times to grab the crystal, then jump. But there is a backward glitch!",
+        sequence: [
+          { text: "➡️ Move Right", isBug: false },
+          { text: "⬅️ Move Back (GLITCH)", isBug: true, correctText: "➡️ Move Right" },
+          { text: "➡️ Move Right", isBug: false },
+          { text: "⭐ Jump & Grab", isBug: false }
+        ]
+      }
+    ];
+
+    let currentBugState = JSON.parse(JSON.stringify(debugPuzzles[0].sequence));
+
+    function renderDebugChain() {
+      const container = document.getElementById('debugChainContainer');
+      container.innerHTML = '';
+
+      currentBugState.forEach((item, idx) => {
+        const block = document.createElement('button');
+        block.onclick = () => fixBugBlock(idx);
+
+        if (item.isBug) {
+          block.className = "px-4 py-3 bg-red-100 hover:bg-red-200 border-2 border-red-400 text-red-800 font-black rounded-2xl text-xs flex items-center gap-1.5 shadow-sm active:scale-95 animate-wiggle";
+          block.innerHTML = `<span>🐞 ${item.text}</span> <span class="text-[10px] bg-red-200 px-1.5 py-0.5 rounded-full">BUG?</span>`;
+        } else {
+          block.className = "px-4 py-3 bg-emerald-100 border-2 border-emerald-300 text-emerald-800 font-black rounded-2xl text-xs flex items-center gap-1.5 shadow-sm";
+          block.innerHTML = `<span>${item.text}</span>`;
+        }
+        container.appendChild(block);
+
+        if (idx < currentBugState.length - 1) {
+          const arrow = document.createElement('span');
+          arrow.className = "text-slate-400 font-black text-sm";
+          arrow.innerText = "➔";
+          container.appendChild(arrow);
+        }
+      });
+    }
+
+    function fixBugBlock(idx) {
+      if (currentBugState[idx].isBug) {
+        soundEngine.success();
+        currentBugState[idx].text = currentBugState[idx].correctText;
+        currentBugState[idx].isBug = false;
+        renderDebugChain();
+        showFeedbackModal("Bug Squashed!", "You swapped the glitched step with the correct forward move! Now test your code.", "🎉");
+      } else {
+        soundEngine.pop();
+      }
+    }
+
+    function resetDebugPuzzle() {
+      soundEngine.click();
+      currentBugState = JSON.parse(JSON.stringify(debugPuzzles[0].sequence));
+      renderDebugChain();
+    }
+
+    function testDebugCode() {
+      const remainingBugs = currentBugState.filter(s => s.isBug).length;
+      if (remainingBugs === 0) {
+        addStars(5);
+        unlockBadge('bugCatcher');
+        showFeedbackModal("Rocket Launched Successfully! 🚀", "No bugs found in the code chain! You think like a senior software engineer!", "🏆");
+      } else {
+        soundEngine.error();
+        showFeedbackModal("Glitch Detected!", "The robot is walking backward instead of toward the crystal. Tap on the red bug to fix it!", "🚨");
+      }
+    }
+
+    /* ==============================================
+       8. MODULE 5: CBSE CERTIFICATE CANVAS
+       ============================================== */
+    function generateCertificateCanvas() {
+      const canvas = document.getElementById('certCanvas');
+      const ctx = canvas.getContext('2d');
+      const name = document.getElementById('certStudentName').value || "Junior Explorer";
+      const school = document.getElementById('certSchoolName').value || "CBSE Primary School";
+      const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      // Canvas Background
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, 800, 520);
+
+      // Gradient Outer Border
+      const grad = ctx.createLinearGradient(0, 0, 800, 520);
+      grad.addColorStop(0, '#7952FC');
+      grad.addColorStop(0.5, '#FF8A00');
+      grad.addColorStop(1, '#1EA7FD');
+      ctx.lineWidth = 14;
+      ctx.strokeStyle = grad;
+      ctx.strokeRect(10, 10, 780, 500);
+
+      // Inner Border
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.strokeRect(26, 26, 748, 468);
+
+      // Header Badges / Logos
+      ctx.font = "bold 20px Fredoka, sans-serif";
+      ctx.fillStyle = "#7952FC";
+      ctx.textAlign = "center";
+      ctx.fillText("🤖 CODEQUEST JUNIOR • CBSE CURRICULUM", 400, 70);
+
+      ctx.font = "bold 34px Fredoka, sans-serif";
+      ctx.fillStyle = "#1E1B4B";
+      ctx.fillText("CERTIFICATE OF COMPUTATIONAL EXCELLENCE", 400, 115);
+
+      ctx.font = "16px Nunito, sans-serif";
+      ctx.fillStyle = "#64748B";
+      ctx.fillText("This is proudly awarded to", 400, 155);
+
+      // Student Name in Bold
+      ctx.font = "bold 36px Fredoka, sans-serif";
+      ctx.fillStyle = "#FF8A00";
+      ctx.fillText(name, 400, 205);
+
+      // Underline for name
+      ctx.strokeStyle = "#FFD124";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(250, 218);
+      ctx.lineTo(550, 218);
+      ctx.stroke();
+
+      // Body text
+      ctx.font = "16px Nunito, sans-serif";
+      ctx.fillStyle = "#334155";
+      ctx.fillText(`A bright student of Class 3 at ${school}`, 400, 255);
+      ctx.fillText("for successfully completing foundational quests in Algorithms, Decomposition,", 400, 285);
+      ctx.fillText("Pattern Recognition, and Debugging in accordance with NEP 2020 Guidelines.", 400, 310);
+
+      // 4 Pillars Checkmarks
+      ctx.font = "bold 13px Nunito, sans-serif";
+      ctx.fillStyle = "#0F766E";
+      ctx.fillText("✓ Algorithms   •   ✓ Decomposition   •   ✓ Patterns   •   ✓ Debugging", 400, 355);
+
+      // Golden Medal Stamp
+      ctx.beginPath();
+      ctx.arc(400, 420, 34, 0, Math.PI * 2);
+      ctx.fillStyle = "#FFD124";
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#FF8A00";
+      ctx.stroke();
+
+      ctx.font = "24px sans-serif";
+      ctx.fillText("🌟", 400, 428);
+
+      // Signatures & Date
+      ctx.font = "14px Nunito, sans-serif";
+      ctx.fillStyle = "#64748B";
+      ctx.textAlign = "left";
+      ctx.fillText(`Date: ${date}`, 50, 460);
+
+      ctx.textAlign = "right";
+      ctx.fillText("CBSE Junior CT Coordinator", 750, 460);
+    }
+
+    function downloadCertificate() {
+      soundEngine.fanfare();
+      const canvas = document.getElementById('certCanvas');
+      const link = document.createElement('a');
+      link.download = `CBSE-Class3-CT-Certificate.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    /* ==============================================
+       9. CONFETTI CELEBRATION ENGINE
+       ============================================== */
+    const confCanvas = document.getElementById('confettiCanvas');
+    const confCtx = confCanvas.getContext('2d');
+    let confettiParticles = [];
+
+    function resizeConfetti() {
+      confCanvas.width = window.innerWidth;
+      confCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+
+    function triggerConfetti() {
+      const colors = ['#FFD124', '#FF8A00', '#7952FC', '#FF4D8D', '#1EA7FD', '#20C997'];
+      for (let i = 0; i < 70; i++) {
+        confettiParticles.push({
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2,
+          vx: (Math.random() - 0.5) * 16,
+          vy: (Math.random() - 0.7) * 16,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 10,
+          life: 1
+        });
+      }
+    }
+
+    function updateConfetti() {
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      confettiParticles.forEach((p, idx) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35; // gravity
+        p.rotation += p.rotationSpeed;
+        p.life -= 0.015;
+
+        confCtx.save();
+        confCtx.translate(p.x, p.y);
+        confCtx.rotate((p.rotation * Math.PI) / 180);
+        confCtx.fillStyle = p.color;
+        confCtx.globalAlpha = Math.max(0, p.life);
+        confCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        confCtx.restore();
+
+        if (p.life <= 0) confettiParticles.splice(idx, 1);
+      });
+      requestAnimationFrame(updateConfetti);
+    }
+    updateConfetti();
+
+    /* ==============================================
+       10. INITIALIZATION
+       ============================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMazeGrid();
+      renderPatternQuestion();
+      renderDecompSlots();
+      renderDecompCardsPool();
+      renderDebugChain();
+      updateBadgeUI();
+    });
+  </script>
+</body>
+</html>
